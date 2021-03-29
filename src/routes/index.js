@@ -10,34 +10,29 @@ const Mensajes = require('../models/messages')
 
 const client = require('../app')
 
-const db = require('../database/database')
+
 
 
 
 cargarItems = async () => {
-    await db.conectar()
      productos = await Productos.find({})
-     await db.desconectar()
+   
 }
 
 newItem = async (prod) => {
-    await db.conectar()
     newProduct= await new Productos(prod)
     await newProduct.save()
-    await db.desconectar()
 }
-
+    
 cargarMessages = async () => {
-    await db.conectar()
      mensajes = await Mensajes.find({})     
-     await  db.desconectar()
+     
 }
 
 newMessage = async (msj) => {
-    await db.conectar()
     newMessage= await new Mensajes(msj)
     await newMessage.save()
-    await db.desconectar()
+   
 }
 router.get('/',(req,res) => {
     res.render('main')

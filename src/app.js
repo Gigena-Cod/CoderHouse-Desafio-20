@@ -4,6 +4,7 @@ const express = require('express')
 const app= express()
 
 const morgan=require('morgan')
+const db = require('./database/database')
 
 //SETTINGS
 app.set('port',3000)
@@ -19,7 +20,7 @@ const index = require('./routes/index.js')
 
 //ROUTES
 app.use('/',index)
-
+db.conectar()
 
 
 //STARTING SERVER

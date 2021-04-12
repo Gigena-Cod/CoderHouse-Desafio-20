@@ -24,7 +24,7 @@ app.use(express.urlencoded({extended:false}))
 const index = require('./routes/index.js')
 
 //ROUTES
-app.use('/productos',index)
+app.use('/api',index)
 db.conectar()
 
 

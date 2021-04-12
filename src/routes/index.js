@@ -6,35 +6,73 @@ const path = require('path')
 
 const moment = require('moment')
 
-const Productos = require('../models/products')
 
 const Mensajes = require('../models/messages')
 
 const bodyParser = require('body-parser');
 
 let server = require('../app')
-const products = require('../models/products')
 let admin = server.admin
 
 // create application/x-www-form-urlencoded parser
 router.use=bodyParser.urlencoded({ extended: true })
 
+const normalizr = require("normalizr")
+const util =require('util')
 
+const normalizar= normalizr.normalize
+const desnormalizar= normalizr.denormalize
+const schema = normalizr.schema
 
-cargarItems = async () => {
-     productos = await Productos.find({})   
+//DEFINIMOS UN NUEVO ESQUEMA DE USUARIOS
+const user = new schema.Entity('users',{idAttribute:'email'})
+
+//DEFINIMOS UN NUEVO ESQUEMA TEXTO
+const text = new schema.Entity('texts')
+
+//DEFINIMOS UN NUEVO ESQUEMA DE MENSAJES
+const message = new schema.Entity('message',{
+    author:user,
+    text:text
+},{
+    idAttribute:"_id"
+})
+
+function toObject(arr) {
+    let texto
+    for (var i = 0; i < arr.length; ++i){
+        if(i==0){
+            texto =arr[i];
+        }else{
+            texto +=","+arr[i];
+        }
+        
+    }
+      
+    return texto
+  }
+  
+
+function print(myObj){
+    console.log(util.inspect(myObj,false,12,true))
 }
 
-newItem = async (prod) => {
-    newProduct= await new Productos(prod)
-    await newProduct.save()
-}
-
-
-    
 cargarMessages = async () => {
     
      mensajes = await Mensajes.find({})   
+     data =toObject(mensajes)
+     try {
+         dataParsed= JSON.stringify(data, null, '\t')
+        console.log(dataParsed)
+         
+     } catch (error) {
+         console.log(error)
+     }
+     
+     
+    
+     
+     
      
 }
 
@@ -46,100 +84,6 @@ newMessage = async (msj) => {
 }
 
 
-
-
-// PAGE PRINCIPAL
-router.get('/list',async (req,res) => { 
-    
-    try {
-        await cargarItems()
-        if(productos.length===0){
-            res.status(200).send({Mensaje:`No existen productos registrados`})
-        }
-
-        res.status(200).send({Productos:productos})
-    
-        
-    } catch (error) {
-        res.status(200).send({Error:`productos`})
-    }
-        
-
-})
-
-//POST
-router.post('/add',async (req,res) => {
-   
-
-     try {
-        await newItem(req.body) 
-        await cargarItems()  
-        
-         res.status(200)
-         res.send({Mensaje:`Producto:${req.body.nombre} registrado correctamente.`})
-         
-     } catch (error) {
-        res.status(204).
-        res.send({Error:`Producto no registrado correctamente.`})
-     }
-         
-  
-        
-})
-
-// DELETE 
-router.delete('/delete/:id',async (req,res)=>{
-    try {
-         //OBTENEMOS EL ID
-         const {id} = req.params  
-
-         await Productos.findByIdAndDelete(id)
-         
-         res.status(200).send({Mensaje:`Producto eliminado correctamente.`})    
-        
-    } catch (error) {
-
-        res.status(500).send({Error:`No se ha podido eliminar el producto correctamente.`})  
-        
-    }      
-                       
-})
-
-// UPDATE  
-router.put('/update/:id',async (req,res)=>{
-             console.log('Entre al put')
-          try {
-              //OBTENEMOS EL ID         
-             const {id} = req.params  
-
-             //OBTENEMOS PRODUCTO
-             const product = await Productos.findById(id)  
-                  
-
-             //UPDATES--SET VALORES 
-              product.nombre = req.body.nombre 
-              product.precio=req.body.precio 
-              product.stock=req.body.stock 
-              product.descripcion=req.body.descripcion
-
-              try {
-                  //GUARDAMOS CAMBIOS
-                await  product.save()  
-
-                
-                res.status(200).send({Mensaje:`Producto:${product.nombre} actualizado correctamente.`})  
-                  
-              } catch (error) {
-              
-                res.status(204).send({Error:`Producto:${product.nombre} no se ha podido guardar correctamente.`}) 
-              }
-              
-          } catch (error) {
-            res.status(204).send({Error:`Producto:${product.nombre} no se ha podido actualizar correctamente.`}) 
-              
-          }     
-                       
-})
 
 //   -----------------------------------------------
 //  ------------          CHAT             ---------
